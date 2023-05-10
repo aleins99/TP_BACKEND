@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // simple route
 
 app.get("/", (req, res) => {
-  res.json({ message: "Bienvenido Node backend 2020" });
+  res.json({ message: "Bienvenido kend 2020" });
 });
 
 // set port, listen for requests
