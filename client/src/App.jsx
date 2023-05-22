@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import Reserva from "./components/Reserva.jsx";
 import "./App.css";
 
 function App() {
@@ -16,14 +16,7 @@ function App() {
   return (
     <div>
       <h1>mesae</h1>
-      {mesas?.map((mesa) => (
-        <div key={mesa.id}>
-          <h2>
-            {mesa.nombre} {mesa.idRestaurante}{" "}
-          </h2>
-          <h2>Piso: {mesa.piso}</h2>
-        </div>
-      ))}
+      <Reserva />
     </div>
   );
 }
