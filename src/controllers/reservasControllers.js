@@ -34,6 +34,7 @@ export const postReservas = async (req, res) => {
   } else {
     idCliente = cliente[0].id;
   }
+
   console.log(cliente);
 
   const reserva = await Reservas.create({
@@ -46,12 +47,12 @@ export const postReservas = async (req, res) => {
     capacidad,
   });
   const testeo = {
-    cliente: cliente,
+    cliente: idCliente,
     horario_inicio: horario_inicio,
     horario_fin: horario_fin,
   };
   console.log(testeo);
-  res.json(testeo);
+  res.json(reserva);
 };
 
 export const putReservas = async (req, res) => {
