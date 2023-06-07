@@ -34,6 +34,7 @@ export const postReservas = async (req, res) => {
   } else {
     idCliente = cliente[0].id;
   }
+
   console.log(cliente);
 
   const reserva = await Reservas.create({

@@ -3,29 +3,52 @@ import Reserva from "./components/Reserva.jsx";
 import "./App.css";
 
 function App() {
-  const [reservas, setReservas] = useState();
-  const [mesas, setMesas] = useState();
-  const [clientes, setClientes] = useState();
-  const [restaurantes, setRestaurantes] = useState();
+  let [reservas, setReservas] = useState();
+  let [mesas, setMesas] = useState();
+  let [clientes, setClientes] = useState();
+  let [restaurantes, setRestaurantes] = useState();
+  let [restauranteInput, setRestauranteInput] = useState('');
+  let [dia, setDia] = useState('');
+  let [mes, setMes] = useState('');
+  let [ano, setAno] = useState('');
+  
   useEffect(() => {
-    getReservas();
+    reiniciar()
+    getReservas()
   }, []);
+
+  function reiniciar () {
+    setRestauranteInput('')
+    setDia(0)
+    setMes(0)
+    setAno(0)
+
+    getReservas()
+  }
+
   async function getReservas() {
+
     const response = await fetch("http://localhost:3000/Reservas");
     const cliente = await fetch("http://localhost:3000/Cliente");
     const restaurante = await fetch("http://localhost:3000/Restaurante");
     const mesa = await fetch("http://localhost:3000/Mesas");
 
-    const data = await response.json();
+    const dataReserva = await response.json();
     const dataCliente = await cliente.json();
     const dataRestaurante = await restaurante.json();
     const dataMesa = await mesa.json();
 
+    dataReserva.forEach((reserva) => {
+      reserva.timestamp = new Date(reserva.fecha).getTime()
+      reserva.horario_inicio = parseInt(reserva.horario_inicio)
+      reserva.horario_fin = parseInt(reserva.horario_fin)
+    })
+
     // sort by date and horario_inicio with horario_fin
-    data.sort((a, b) => {
-      if (a.fecha > b.fecha) {
+    dataReserva.sort((a, b) => {
+      if (a.timestamp > b.timestamp) {
         return 1;
-      } else if (a.fecha < b.fecha) {
+      } else if (a.timestamp < b.timestamp) {
         return -1;
       } else {
         if (a.horario_inicio > b.horario_inicio) {
@@ -43,7 +66,8 @@ function App() {
         }
       }
     });
-    data.forEach((reserva) => {
+    
+    dataReserva.forEach((reserva) => {
       const restaurante1 = dataRestaurante.find(
         (restaurante) => restaurante.id === reserva.idRestaurante
       );
@@ -55,27 +79,63 @@ function App() {
       reserva.idCliente = cliente1?.nombre;
       reserva.idRestaurante = restaurante1?.nombre;
     });
-    setReservas(data);
+    
+    reservas = dataReserva
+    setReservas(dataReserva);
   }
+
+  async function filtrar(event) {
+    event.preventDefault();
+
+    await getReservas()
+    console.log('reservas0', reservas)
+    console.log('dia && mes && ano', typeof dia, typeof mes, typeof ano)
+
+    dia.length === 1 ? dia = '0'+dia : ''
+    mes.length === 1 ? mes = '0'+mes : ''
+
+    if (restauranteInput) {
+      const result = reservas.filter(reserva => reserva.idRestaurante.toLowerCase().includes(restauranteInput.toLowerCase()))
+      reservas = result
+      setReservas(result);
+    }
+
+    if (dia && mes && ano) {
+      const fechaString = `${ano}-${mes}-${dia}`
+      const result = reservas.filter(reserva => reserva.fecha.includes(fechaString))
+      reservas = result
+      setReservas(result);
+    }
+
+  }
+
+  useEffect(() => {
+    console.log('reservas actualizadas:', reservas);
+  }, [reservas]);
+
   async function getMesas() {
-    setMesas(data);
-    console.log(data);
+    setMesas(dataReserva);
+    console.log(dataReserva);
   }
+
+
   async function getClientes() {
     const response = await fetch("http://localhost:3000/Cliente");
     const data = await response.json();
     setClientes(data);
   }
+
+
   async function getRestaurantes() {
     const response = await fetch("http://localhost:3000/Restaurante");
     const data = await response.json();
     setRestaurantes(data);
   }
 
+
   return (
     <div className="table-wrapper">
       <h1>Lista de Reservas</h1>
-      <button>Filtrar</button>
       <table className="fl-table">
         <thead>
           <tr>
@@ -91,17 +151,44 @@ function App() {
         <tbody>
           {reservas?.map((reserva) => (
             <tr key={reserva.id}>
-              <td>{reserva.idRestaurante}</td>
-              <td>{reserva.idCliente}</td>
-              <td>{reserva.idMesa}</td>
-              <td>{reserva.fecha}</td>
-              <td>{reserva.horario_inicio}</td>
-              <td>{reserva.horario_fin}</td>
-              <td>{reserva.capacidad}</td>
+              <td class="tdColor">{reserva.idRestaurante}</td>
+              <td class="tdColor">{reserva.idCliente}</td>
+              <td class="tdColor">{reserva.idMesa}</td>
+              <td class="tdColor">{reserva.fecha}</td>
+              <td class="tdColor">{reserva.horario_inicio}</td>
+              <td class="tdColor">{reserva.horario_fin}</td>
+              <td class="tdColor">{reserva.capacidad}</td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <div class="my-5">
+        <form class="container" onSubmit={filtrar}>
+          <div class="mb-3">
+            <label class="form-label">Pone un restaurante:</label>
+            <input type="text" class="form-control" placeholder="Pizza Hut" value={restauranteInput} onChange={(event) => setRestauranteInput(event.target.value)} />
+          </div>
+          <br />
+          
+          <div class="mb-3">
+            
+            <label class="form-label mt-3">Dia: </label>
+            <input type="number" class="form-control" placeholder="Dia" value={dia} onChange={(event) => setDia(event.target.value)} />
+            
+            <label class="form-label mt-2">Mes: </label>
+            <input type="number" class="form-control" placeholder="Mes" value={mes} onChange={(event) => setMes(event.target.value)} />
+            
+            <label class="form-label mt-2">Año: </label>
+            <input type="number" class="form-control" placeholder="Año" value={ano} onChange={(event) => setAno(event.target.value)} />
+          </div>
+          <br />
+          
+          <button onClick={filtrar}>Filtrar</button>
+          <button onClick={reiniciar}>Reiniciar</button>
+        </form>
+        
+      </div>
     </div>
   );
 }
