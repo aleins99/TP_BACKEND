@@ -91,3 +91,57 @@ export const Reservas = sequelize.define("Reservas", {
     type: Sequelize.INTEGER,
   },
 });
+
+export const ConsumoClienteCabecera = sequelize.define("Consumo_Cliente_Mesa", {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  idMesa: {
+    type: Sequelize.INTEGER,
+  },
+  idCliente: {
+    type: Sequelize.INTEGER,
+  },
+  estado: {
+    type: Sequelize.STRING,
+  },
+  total: {
+    type: Sequelize.INTEGER,
+  },
+  fecha_inicio: {
+    type: Sequelize.DATE,
+  },
+  fecha_fin: {
+    type: Sequelize.DATE,
+  },
+  horario_inicio: {
+    type: Sequelize.STRING,
+  },
+  horario_fin: {
+    type: Sequelize.STRING,
+  },
+});
+
+// creame una tabla que se llame consumo_cliente_detalle
+// que tenga un id, idConsumoClienteCabecera, idProducto, cantidad
+export const ConsumoClienteDetalle = sequelize.define(
+  "Consumo_Cliente_Detalle",
+  {
+    id: {
+      type: Sequelize.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    idConsumoClienteCabecera: {
+      type: Sequelize.INTEGER,
+    },
+    idProducto: {
+      type: Sequelize.INTEGER,
+    },
+    cantidad: {
+      type: Sequelize.INTEGER,
+    },
+  }
+);

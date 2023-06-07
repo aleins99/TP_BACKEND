@@ -45,13 +45,7 @@ export const postReservas = async (req, res) => {
     idCliente,
     capacidad,
   });
-  const testeo = {
-    cliente: cliente,
-    horario_inicio: horario_inicio,
-    horario_fin: horario_fin,
-  };
-  console.log(testeo);
-  res.json(testeo);
+  res.json(reserva);
 };
 
 export const putReservas = async (req, res) => {
