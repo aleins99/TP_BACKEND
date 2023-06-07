@@ -145,3 +145,31 @@ export const ConsumoClienteDetalle = sequelize.define(
     },
   }
 );
+
+export const Categoria = sequelize.define("Categoria", {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  nombre: {
+    type: Sequelize.STRING,
+  },
+});
+
+export const Producto = sequelize.define("Producto", {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  nombre_producto: {
+    type: Sequelize.STRING,
+  },
+  id_categoria: {
+    type: Sequelize.STRING,
+  },
+  precio_venta: {
+    type: Sequelize.INTEGER,
+  },
+});
