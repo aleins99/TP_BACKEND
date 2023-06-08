@@ -4,6 +4,8 @@ import App from "./App.jsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Reserva from "./components/Reserva.jsx";
+import GestionConsumo from "./components/GestionConsumo.jsx";
+
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -14,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: "/reserva",
     element: <Reserva />,
+  },
+  {
+    path: "/gestion",
+    element: <GestionConsumo />,
   },
 ]);
 

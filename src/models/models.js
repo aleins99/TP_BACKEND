@@ -106,12 +106,15 @@ export const ConsumoClienteCabecera = sequelize.define("Consumo_Cliente_Mesa", {
   },
   estado: {
     type: Sequelize.STRING,
+    //add a default value "abierto"
+    defaultValue: "abierto",
   },
   total: {
     type: Sequelize.INTEGER,
   },
   fecha_inicio: {
     type: Sequelize.DATE,
+    defaultValue: Sequelize.NOW,
   },
   fecha_fin: {
     type: Sequelize.DATE,

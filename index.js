@@ -7,7 +7,7 @@ import MesasRouter from "./src/routes/mesasRouter.js";
 import ReservasRouter from "./src/routes/reservasRouter.js";
 import CategoriaRouter from "./src/routes/categoriaRouter.js";
 import ProductoRouter from "./src/routes/productoRouter.js";
-
+import ConsumoClienteRouter from "./src/routes/consumoClienteRouter.js";
 await sequelize.sync();
 
 const app = express();
@@ -30,7 +30,7 @@ app.use("/Mesas", MesasRouter);
 app.use("/Reservas", ReservasRouter);
 app.use("/Categoria", CategoriaRouter);
 app.use("/Producto", ProductoRouter);
-
+app.use("/ConsumoCliente", ConsumoClienteRouter);
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

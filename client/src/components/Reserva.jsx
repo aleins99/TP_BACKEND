@@ -154,7 +154,10 @@ export default function Reserva() {
         ))}
 
         {!clicked ? (
-          <u style={{ cursor: 'pointer' }} onClick={buscarMesas}> Buscar Mesas disponibles </u>
+          <u style={{ cursor: "pointer" }} onClick={buscarMesas}>
+            {" "}
+            Buscar Mesas disponibles{" "}
+          </u>
         ) : (
           <div>
             <br />
