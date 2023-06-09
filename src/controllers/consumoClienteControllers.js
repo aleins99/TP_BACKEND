@@ -9,11 +9,11 @@ export const getConsumoClienteCabecera = async (req, res) => {
 };
 export const postConsumoClienteCabecera = async (req, res) => {
   const { fecha, clienteId } = req.body;
-  const ConsumoClienteCabecera = await ConsumoClienteCabecera.create({
+  const consumoClienteCabecera = await ConsumoClienteCabecera.create({
     fecha,
     clienteId,
   });
-  res.json(ConsumoClienteCabecera);
+  res.json(consumoClienteCabecera);
 };
 export const putConsumoClienteCabecera = async (req, res) => {
   const { idMesa, idCliente, total } = req.body;
@@ -45,7 +45,8 @@ export const getTotalConsumicionMesa = async (req, res) => {
 async function calcularTotalConsumicion(json,params) {
   try {
     let total = 0;
-    const {idConsumoClienteCabecera} =params
+    const {idConsumoClienteCabecera} = params
+    let id = idConsumoClienteCabecera;
     for (const item of json) {
       const precio = item.precio_venta;
       const idProducto = item.id;
@@ -56,6 +57,10 @@ async function calcularTotalConsumicion(json,params) {
         idConsumoClienteCabecera,
         cantidad
       });
+      const consumoClienteCabecera = await ConsumoClienteCabecera.update(
+        { total },
+        { where: { id } }
+      );
     }
     return total;
   } catch (error) {
