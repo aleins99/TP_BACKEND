@@ -1,6 +1,7 @@
 import {
   ConsumoClienteCabecera,
   ConsumoClienteDetalle,
+  Producto,
 } from "../models/models.js";
 
 export const getConsumoClienteCabecera = async (req, res) => {
@@ -8,10 +9,12 @@ export const getConsumoClienteCabecera = async (req, res) => {
   res.json(ConsumoClienteCabeceras);
 };
 export const postConsumoClienteCabecera = async (req, res) => {
-  const { fecha, clienteId } = req.body;
+  const { idMesa, idCliente, total, estado } = req.body;
   const consumoClienteCabecera = await ConsumoClienteCabecera.create({
-    fecha,
-    clienteId,
+    idCliente,
+    idMesa,
+    total,
+    estado,
   });
   res.json(consumoClienteCabecera);
 };
@@ -19,11 +22,38 @@ export const putConsumoClienteCabecera = async (req, res) => {
   const { idMesa, idCliente, total } = req.body;
   const { id } = req.params;
   const ConsumoClienteCabecera = await ConsumoClienteCabecera.update(
-    { fecha, clienteId },
+    { clienteId },
     { where: { id } }
   );
   res.json(ConsumoClienteCabecera);
 };
+export const deleteConsumoClienteCabecera = async (req, res) => {
+  const { id } = req.params;
+  const consumoClienteCabecera = await ConsumoClienteCabecera.destroy({
+    where: { id },
+  });
+  res.json(consumoClienteCabecera);
+};
+// get all the products buy a client
+export const getProductosMesa = async (req, res) => {
+  const { idMesa } = req.params;
+  const mesaConsumoCliente = await ConsumoClienteCabecera.findAll({
+    where: { idMesa },
+  });
+  let productos = [];
+  for (const item of mesaConsumoCliente) {
+    const consumoClienteDetalle = await ConsumoClienteDetalle.findAll({
+      where: { idConsumoClienteCabecera: item.id },
+    });
+    for (const detalle of consumoClienteDetalle) {
+      const producto = await Producto.findByPk(detalle.idProducto);
+      productos.push(producto);
+    }
+  }
+
+  res.json(productos);
+};
+
 export const getConsumoMesa = async (req, res) => {
   const { idMesa } = req.params;
   const mesaConsumoCliente = await ConsumoClienteCabecera.findAll({
@@ -35,17 +65,17 @@ export const getConsumoMesa = async (req, res) => {
 export const getTotalConsumicionMesa = async (req, res) => {
   try {
     const json = req.body;
-    const total = await calcularTotalConsumicion(json,req.params);
+    const total = await calcularTotalConsumicion(json, req.params);
     res.json({ total });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-async function calcularTotalConsumicion(json,params) {
+async function calcularTotalConsumicion(json, params) {
   try {
     let total = 0;
-    const {idConsumoClienteCabecera} = params
+    const { idConsumoClienteCabecera } = params;
     let id = idConsumoClienteCabecera;
     for (const item of json) {
       const precio = item.precio_venta;
@@ -55,7 +85,7 @@ async function calcularTotalConsumicion(json,params) {
       const consumoClienteDetalle = await ConsumoClienteDetalle.create({
         idProducto,
         idConsumoClienteCabecera,
-        cantidad
+        cantidad,
       });
       const consumoClienteCabecera = await ConsumoClienteCabecera.update(
         { total },
@@ -64,6 +94,8 @@ async function calcularTotalConsumicion(json,params) {
     }
     return total;
   } catch (error) {
-    throw new Error('Error al calcular el total de la consumición: ' + error.message);
+    throw new Error(
+      "Error al calcular el total de la consumición: " + error.message
+    );
   }
 }
