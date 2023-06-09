@@ -9,7 +9,8 @@ export const getConsumoClienteCabecera = async (req, res) => {
   res.json(ConsumoClienteCabeceras);
 };
 export const postConsumoClienteCabecera = async (req, res) => {
-  const { idMesa, idCliente, total, estado } = req.body;
+  const { idMesa, idCliente, total } = req.body;
+  const estado = "cerrado";
   const consumoClienteCabecera = await ConsumoClienteCabecera.create({
     idCliente,
     idMesa,
@@ -19,20 +20,31 @@ export const postConsumoClienteCabecera = async (req, res) => {
   res.json(consumoClienteCabecera);
 };
 export const putConsumoClienteCabecera = async (req, res) => {
-  const { idMesa, idCliente, total } = req.body;
+  const { idMesa, idCliente, estado } = req.body;
   const { id } = req.params;
-  const ConsumoClienteCabecera = await ConsumoClienteCabecera.update(
-    { clienteId },
+  const consumoClienteCabecera = await ConsumoClienteCabecera.update(
+    { idCliente, estado },
     { where: { id } }
   );
-  res.json(ConsumoClienteCabecera);
+  res.json(consumoClienteCabecera);
 };
 export const deleteConsumoClienteCabecera = async (req, res) => {
   const { id } = req.params;
   const consumoClienteCabecera = await ConsumoClienteCabecera.destroy({
     where: { id },
   });
+  const consumoClienteDetalle = await ConsumoClienteDetalle.destroy({
+    where: { idConsumoClienteCabecera: id },
+  });
+
   res.json(consumoClienteCabecera);
+};
+export const deleteConsumoClienteDetalle = async (req, res) => {
+  const { id } = req.params;
+  const consumoClienteDetalle = await ConsumoClienteDetalle.destroy({
+    where: { id },
+  });
+  res.json(consumoClienteDetalle);
 };
 // get all the products buy a client
 export const getProductosMesa = async (req, res) => {
@@ -75,8 +87,14 @@ export const getTotalConsumicionMesa = async (req, res) => {
 async function calcularTotalConsumicion(json, params) {
   try {
     let total = 0;
+
     const { idConsumoClienteCabecera } = params;
+    // get the total of the consumicion
+
     let id = idConsumoClienteCabecera;
+    const consumoClienteCabecera = await ConsumoClienteCabecera.findByPk(id);
+    total = consumoClienteCabecera.total;
+    total = parseInt(total);
     for (const item of json) {
       const precio = item.precio_venta;
       const idProducto = item.id;

@@ -5,6 +5,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Reserva from "./components/Reserva.jsx";
 import GestionConsumo from "./components/GestionConsumo.jsx";
+import AddCliente from "./components/AddCliente.jsx";
 
 import "./index.css";
 
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
   {
     path: "/gestion",
     element: <GestionConsumo />,
+  },
+  {
+    path: "/agregarCliente",
+    element: <AddCliente />,
   },
 ]);
 

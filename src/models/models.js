@@ -107,7 +107,7 @@ export const ConsumoClienteCabecera = sequelize.define("Consumo_Cliente_Mesa", {
   estado: {
     type: Sequelize.STRING,
     //add a default value "abierto"
-    defaultValue: "abierto",
+    defaultValue: "cerrado",
   },
   total: {
     type: Sequelize.INTEGER,

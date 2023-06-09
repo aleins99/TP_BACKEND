@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import Producto from "./Producto";
+import ClienteForm from "./ClienteForm";
 export default function GestionConsumo() {
   const [mesas, setMesas] = useState([]);
   const [mesa, setMesa] = useState(0);
   const [mesaDisponible, setMesaDisponible] = useState(true);
-  const [clientes, setClientes] = useState([]);
-  const [busquedaCliente, setBusquedaCliente] = useState("");
-  const checkboxRef = useRef();
+  const clientesState = useState([]);
   const [productos, setProductos] = useState([]);
   const [mesaCliente, setMesaCliente] = useState(undefined);
   const [productosMesa, setProductosMesa] = useState([]);
@@ -16,7 +15,8 @@ export default function GestionConsumo() {
     check: false,
     id: 0,
   });
-
+  const [idConsumocabecera, setIdConsumocabecera] = useState(0);
+  const [total, setTotal] = useState(0);
   function statusChanged(event, index) {
     setMesa(() => {
       return event.target.value;
@@ -30,6 +30,7 @@ export default function GestionConsumo() {
       })
       .then((data) => {
         console.log(data);
+        setMesa(data[0].id);
         setMesas(data);
       })
       .catch((error) => {
@@ -52,6 +53,9 @@ export default function GestionConsumo() {
         setMesaDisponible(data[0].estado == "abierto");
         if (data[0].estado == "cerrado") {
           setMesaCliente(data[0].idCliente);
+          setTotal(data[0].total);
+          setIdConsumocabecera(data[0].id);
+          setCheckCliente({ check: true, id: data[0].idCliente });
         }
       })
       .catch((error) => {
@@ -59,7 +63,7 @@ export default function GestionConsumo() {
       });
   }, [mesa]);
   useEffect(() => {
-    if (mesaDisponible === false) {
+    if (mesaDisponible == false) {
       console.log("holaa");
       fetch(`http://localhost:3000/ConsumoCliente/mesa/${mesa}/productos`)
         .then((response) => {
@@ -73,114 +77,84 @@ export default function GestionConsumo() {
           console.log(error);
         });
     }
-  }, []);
+  }, [mesaDisponible]);
 
-  useEffect(() => {
-    fetch(`http://localhost:3000/Cliente`)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        setClientes(data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  function handleCliente(event) {
-    setBusquedaCliente(event.target.value);
-  }
-  const clientesFiltrados = clientes.filter((cliente) => {
-    const cedula = cliente.cedula?.toString();
-    const nombre = cliente.nombre?.toLowerCase();
-    const apellido = cliente.apellido?.toLowerCase();
-    const busqueda = busquedaCliente.split(" ");
-    const nombreBusqueda =
-      busqueda.length > 2 ? busqueda[0] + " " + busqueda[1] : busqueda[0];
-    const apellidoBusqueda =
-      nombreBusqueda.split(" ").length > 1 ? busqueda[2] : busqueda[1];
-
-    return (
-      cedula?.includes(busqueda[0]) ||
-      (nombre?.includes(nombreBusqueda?.toLowerCase()) &&
-        apellido?.includes(apellidoBusqueda?.toLowerCase())) ||
-      (nombre?.includes(nombreBusqueda) && busqueda.length <= 1)
-    );
-  });
-  const handleClientesSeleccionados = (e) => {
-    for (const iterator of checkboxRef.current.children) {
-      if (iterator.localName == "input") {
-        if (checkCliente.check == true && checkCliente.id != iterator.value) {
-          iterator.checked = false;
-        } else if (
-          checkCliente.check === true &&
-          checkCliente.id == iterator.value &&
-          iterator.checked === false
-        )
-          setCheckCliente({ check: false, id: 0 });
-        if (iterator.checked == true && checkCliente.check === false) {
-          setCheckCliente({ check: true, id: iterator.value });
-        }
-      }
-    }
-  };
   console.log(productosMesa);
   const handleSubmit = (e) => {
     e.preventDefault();
     const checkedCheckboxes = productos.filter((checkbox) =>
       productosSeleccionados.includes(checkbox.id.toString())
     );
+    const form = e.target;
+    const data = new FormData(form);
     if (mesaDisponible === false) {
-      fetch(`http://localhost:3000/ConsumoCliente/mesa/${mesa}/consumo`, {
+      //
+      const estado = data.get("estado");
+      if (estado == "abierto") {
+        fetch(`http://localhost:3000/ConsumoCliente/${idConsumocabecera}`, {
+          method: "DELETE",
+        });
+        return;
+      }
+      fetch(`http://localhost:3000/ConsumoCliente/${idConsumocabecera}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          idMesa: mesa,
           idCliente: checkCliente.id,
-          estado: "cerrado",
+          estado: estado,
         }),
-      }).then((response) => {
-        return response.json();
       });
-      return;
-    }
-    fetch("http://localhost:3000/ConsumoCliente/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        idMesa: mesa,
-        idCliente: checkCliente.id,
-        estado: "cerrado",
-        total: 0,
-      }),
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        console.log(data);
-        fetch(`http://localhost:3000/ConsumoCliente/mesa/${data.id}/consumo`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(checkedCheckboxes),
-        }).then((response) => {
+      if (checkedCheckboxes.length > 0) {
+        fetch(
+          `http://localhost:3000/ConsumoCliente/mesa/${idConsumocabecera}/consumo`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(checkedCheckboxes),
+          }
+        ).then((response) => {
           return response.json();
         });
-      });
+      }
 
+      console.log(estado);
+    } else {
+      fetch("http://localhost:3000/ConsumoCliente/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idMesa: mesa,
+          idCliente: checkCliente.id,
+          total: 0,
+        }),
+      })
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          console.log(data);
+          fetch(
+            `http://localhost:3000/ConsumoCliente/mesa/${data.id}/consumo`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(checkedCheckboxes),
+            }
+          ).then((response) => {
+            return response.json();
+          });
+        });
+    }
     console.log(checkedCheckboxes);
-  };
-  const handleNombreCliente = () => {
-    if (mesaCliente === undefined) return "";
-    console.log(mesaCliente);
-    const cliente = clientes.find((cliente) => cliente.id === mesaCliente);
-    return cliente.nombre + " " + cliente.apellido;
   };
 
   return (
@@ -195,35 +169,21 @@ export default function GestionConsumo() {
         ))}
       </select>
       <br />
-
-      <label htmlFor="cliente">Cliente</label>
-      <input
-        type="text"
-        name="cliente"
-        id="cliente"
-        value={busquedaCliente || handleNombreCliente()}
-        onChange={handleCliente}
+      <ClienteForm
+        clientesState={clientesState}
+        mesaCliente={mesaCliente}
+        setCheckCliente={setCheckCliente}
+        checkCliente={checkCliente}
       />
-      <br />
-      {busquedaCliente.length > 4 && (
-        <ul ref={checkboxRef} onChange={handleClientesSeleccionados}>
-          {clientesFiltrados.map((cl, index) => (
-            <>
-              <label>
-                {cl.nombre} {cl.apellido} {cl.cedula}
-              </label>
-              <input key={cl.id} type="checkbox" name="cliente" value={cl.id} />
-              <br />
-            </>
-          ))}
-        </ul>
-      )}
+
       {mesaDisponible === false && (
         <>
           <label htmlFor="estado">Estado</label>
           <select name="estado" id="estado">
             <option value="abierto">Abierto</option>
-            <option value="cerrado">Cerrado</option>
+            <option value="cerrado" selected>
+              Cerrado
+            </option>
           </select>
           {productosMesa.map((producto) => (
             <div key={producto.id}>
@@ -248,6 +208,9 @@ export default function GestionConsumo() {
         setProductosMesa={setProductosSeleccionados}
         productosMesa={productosSeleccionados}
       />
+      {mesaDisponible === false && (
+        <h2 style={{ color: "black" }}>Total: {total}</h2>
+      )}
 
       <input type="submit" value="Cargar" />
     </form>
