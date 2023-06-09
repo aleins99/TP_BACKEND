@@ -31,3 +31,34 @@ export const getConsumoMesa = async (req, res) => {
   });
   res.json(mesaConsumoCliente);
 };
+
+export const getTotalConsumicionMesa = async (req, res) => {
+  try {
+    const json = req.body;
+    const total = await calcularTotalConsumicion(json,req.params);
+    res.json({ total });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+async function calcularTotalConsumicion(json,params) {
+  try {
+    let total = 0;
+    const {idConsumoClienteCabecera} =params
+    for (const item of json) {
+      const precio = item.precio_venta;
+      const idProducto = item.id;
+      const cantidad = item.quantity;
+      total += precio * cantidad;
+      const consumoClienteDetalle = await ConsumoClienteDetalle.create({
+        idProducto,
+        idConsumoClienteCabecera,
+        cantidad
+      });
+    }
+    return total;
+  } catch (error) {
+    throw new Error('Error al calcular el total de la consumición: ' + error.message);
+  }
+}
