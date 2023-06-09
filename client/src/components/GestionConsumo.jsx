@@ -106,9 +106,10 @@ export default function GestionConsumo() {
   console.log(productosMesa);
   const handleSubmit = (e) => {
     e.preventDefault();
-    const checkedCheckboxes = checkboxes.filter((checkbox) =>
-      selectedCheckboxes.includes(checkbox.id)
+    const checkedCheckboxes = productos.filter((checkbox) =>
+      productosMesa.includes(checkbox.id.toString())
     );
+    console.log(checkedCheckboxes);
   };
   return (
     <form onSubmit={handleSubmit}>
